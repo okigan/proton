@@ -1,0 +1,6 @@
+Build/**
+DerivedData/**
+*/dist/**
+protongo/protongo
+protonapp/main
+protonapp/protonapp
