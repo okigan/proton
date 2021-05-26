@@ -12,7 +12,7 @@ build-ui:
 
 .PHONY: build-backend-cocoa
 build-backend-cocoa:
-	cd proton-backend-cocoa && swift build && swift test
+	cd proton-backend-cocoa && swift build
 
 .PHONY: build-go
 build-go:
