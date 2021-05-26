@@ -95,15 +95,20 @@ class AppMenu : NSMenu {
     
 }
 
-@available(macOS 11.0, *)
-class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithReply {
+@available(macOS 10.15, *)
+class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKScriptMessageHandlerWithReply {
     var title: String = ProcessInfo.processInfo.processName
     var contentPath: String = ""
+    
+    func userContentController(_ userContentController: WKUserContentController,
+                               didReceive message: WKScriptMessage){
+        print("[swift] WKScriptMessageHandler callback called, name: \(message.name) with body: \(message.body)")
+    }
 
     func userContentController(_ userContentController: WKUserContentController,
                                didReceive message: WKScriptMessage,
                                replyHandler: @escaping (Any?, String?) -> Void) {
-        print("[swift] WKScriptMessageHandler callback called, name: \(message.name) with body: \(message.body)")
+        print("[swift] WKScriptMessageHandlerWithReply callback called, name: \(message.name) with body: \(message.body)")
         DispatchQueue.global(qos: .userInitiated).async {
             print("[swift] This is run on a background queue")
             let result2 = prtn_invoke_function_through_dispatcher(name: message.name, param: message.body as! String)
@@ -151,14 +156,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRe
         
         let userContentController = WKUserContentController()
         //        userContentController.add(self, name: "test")
-        userContentController.addScriptMessageHandler(
+        userContentController.add(
             self,
-            contentWorld: WKContentWorld.page,
             name: "test2")
         
-        userContentController.addScriptMessageHandler(
+        userContentController.add(
             self,
-            contentWorld: WKContentWorld.page,
             name: "sleep")
         
         let scriptSource = "window.webkit.messageHandlers.test2.postMessage(\"Hello from swift applicationDidFinishLaunching!\");"
@@ -212,7 +215,7 @@ let app = NSApplication.shared
 
 let delegate = AppDelegate()
 
-@available(macOS 11.0, *)
+@available(macOS 10.15, *)
 func main(_ title:String) -> Int {
     
     autoreleasepool {
