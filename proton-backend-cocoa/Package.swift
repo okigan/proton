@@ -9,14 +9,13 @@ let package = Package(
         .macOS(.v11),
     ],
     products: [
-        // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "proton",
-            // type: .dynamic,
+            name: "proton-backend-cocoa",
             type: .static,
-            targets: ["proton"]),
-        .executable(name: "protonapp",
-                    targets: ["protonapp"]),
+            targets: ["proton-backend-cocoa"]),
+
+        .executable(name: "protontestapp",
+                    targets: ["protontestapp"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -26,16 +25,16 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
-            name: "proton",
-            dependencies: ["ModuleXObjC"]),
+            name: "proton-backend-cocoa",
+            dependencies: ["protonObjC"]),
         .testTarget(
-            name: "protonTests",
-            dependencies: ["proton"]),
+            name: "proton-backend-cocoaTests",
+            dependencies: ["proton-backend-cocoa"]),
         .target(
-            name: "protonapp",
-            dependencies: ["proton"]),
+            name: "protontestapp",
+            dependencies: ["proton-backend-cocoa"]),
         .target(
-           name: "ModuleXObjC",
+           name: "protonObjC",
            dependencies: [],
            cSettings: [
               .headerSearchPath("Internal"),

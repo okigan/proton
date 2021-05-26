@@ -5,7 +5,7 @@
 //  Created by Igor Okulist on 5/19/21.
 //
 
-import proton
+import proton_backend_cocoa
 
 print("Hello from protonapp main.swift ")
 

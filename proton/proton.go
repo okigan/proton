@@ -4,8 +4,8 @@ package proton
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../proton-swift/Sources/proton/proton_crafted.h"
-#cgo LDFLAGS: -L../proton-swift/.build/x86_64-apple-macosx/debug -lproton
+#include "../proton-backend-cocoa/Sources/proton-backend-cocoa/proton_crafted.h"
+#cgo LDFLAGS: -L../proton-backend-cocoa/.build/x86_64-apple-macosx/debug -lproton-backend-cocoa
 #cgo darwin LDFLAGS: -L/usr/lib/swift/
 #cgo darwin LDFLAGS: -framework Foundation
 #cgo darwin LDFLAGS: -framework WebKit
@@ -78,30 +78,55 @@ func go_callback_dispatcher(v unsafe.Pointer, param *C.char) *C.char {
 	go_callback := pointer.Restore(v).(func(string) (int, string))
 	go_param := C.GoString(param)
 	_, s := go_callback(go_param)
-	print("[golang] complited callback call\n")
+	print("[golang] completed callback call\n")
 	return C.CString(s)
 }
 
 type ProtonApp interface {
 	Run()
 	Destroy()
-	SetTitle(title string)
+	SetContentPath(path string)
+	Bind(name string, callback func(string) string)
+	//	SetTitle(title string)
 }
 
-type proton_app_handle struct {
+type proton_swift_app_handle struct {
+	ContentPath string
 }
 
 func New() ProtonApp {
-	w := &proton_app_handle{}
+	handle := proton_swift_app_handle{
+		
+	}
+	handle.ContentPath = "unset content path"
 
-	return w
+	return &handle
 }
 
-func (handle *proton_app_handle) Destroy() {
+func (handle *proton_swift_app_handle) Destroy() {
 	// C.webview_destroy(w.w)
 }
 
-func (handle *proton_app_handle) Run() {
+func (handle *proton_swift_app_handle) Run() {
+	name := "test string"
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_name))
 
-	main()
+	C.sayHello(c_name)
+	result := C.setContentPath(C.CString(handle.ContentPath))
+	result = C.startApp(c_name)
+	fmt.Println("[golang]", time.Now().Format("2006-01-02 15:04:05"), "proton app exit code: ", result)
+}
+
+func (handle *proton_swift_app_handle) SetContentPath(path string) {
+	fmt.Println("[golang] in", "SetContentPath", path)
+	handle.ContentPath = path
+}
+
+func (handle *proton_swift_app_handle) Bind(name string, callback func(string) string) {
+	register_callback(name, func(v string) (int, string) {
+		result := callback("asd")
+		return 0, result
+	})
+
 }

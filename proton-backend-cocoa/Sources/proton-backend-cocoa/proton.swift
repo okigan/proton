@@ -95,8 +95,11 @@ class AppMenu : NSMenu {
     
 }
 
- @available(macOS 11.0, *)
+@available(macOS 11.0, *)
 class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithReply {
+    var title: String = ProcessInfo.processInfo.processName
+    var contentPath: String = ""
+
     func userContentController(_ userContentController: WKUserContentController,
                                didReceive message: WKScriptMessage,
                                replyHandler: @escaping (Any?, String?) -> Void) {
@@ -135,14 +138,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRe
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        let applicationName = ProcessInfo.processInfo.processName
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 640, height: 480),
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false)
         window.cascadeTopLeft(from: NSPoint(x: 20, y: 20))
-        window.title = applicationName
+        window.title = title
         //        window.contentView = NSHostingView(rootView: ContentV)
         window.makeKeyAndOrderFront(nil)
         
@@ -171,7 +173,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRe
         webview = WKWebView(frame: .zero, configuration: config)
         
         do {
-            let contents = try String(contentsOfFile: "/Users/iokulist/Github/okigan/proton/protonui/dist/index.html")
+//            let contents = try String(contentsOfFile: "/Users/iokulist/Github/okigan/proton/protonui/dist/index.html")
+            let contents = try String(contentsOfFile: contentPath)
             // print(contents)
             webview.loadHTMLString(contents, baseURL: URL(string: ""))
             //            url = URL(string: "data:text/html," + contents)
@@ -204,13 +207,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRe
     }
 }
 
+    
+let app = NSApplication.shared
+
+let delegate = AppDelegate()
+
 @available(macOS 11.0, *)
-func main() -> Int {
+func main(_ title:String) -> Int {
     
     autoreleasepool {
-        let delegate = AppDelegate()
+        delegate.title = title
+ //       delegate.contentPath = "/Users/iokulist/Github/okigan/proton/protonui/dist/index.html"
         let menu = AppMenu()
-        let app = NSApplication.shared
         app.mainMenu = menu
         app.delegate = delegate
         
@@ -222,5 +230,14 @@ func main() -> Int {
 
 @_cdecl("startApp")
 public func startApp(namePtr: UnsafePointer<CChar>?) -> Int {
-    return main()
+    let name = String(cString: namePtr!)
+
+    return main(name)
+}
+
+@_cdecl("setContentPath")
+public func setContentPath(contentPathPtr: UnsafePointer<CChar>?) -> Int {
+    delegate.contentPath = String(cString: contentPathPtr!)
+
+    return 0
 }

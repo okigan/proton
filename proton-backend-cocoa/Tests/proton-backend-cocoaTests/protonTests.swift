@@ -1,5 +1,5 @@
     import XCTest
-    @testable import proton
+    @testable import proton_backend_cocoa
 
     final class protonTests: XCTestCase {
         func testExample() {

@@ -1,5 +1,5 @@
 
-#include "../proton-swift/Sources/proton/proton_crafted.h"
+#include "../proton-backend-cocoa/Sources/proton-backend-cocoa/proton_crafted.h"
 
 extern "C" {
 

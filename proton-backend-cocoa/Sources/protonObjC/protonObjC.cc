@@ -5,7 +5,7 @@
 //  Created by Igor Okulist on 5/7/21.
 //
 
-#include "include/ModuleXObjC.h"
+#include "include/protonObjC.h"
 
 #include <stdio.h>
 #include <map>

@@ -34,12 +34,20 @@ public func prtn_register_function_callback_with_dispatcher(
 }
 
 public func prtn_invoke_function_through_dispatcher(name: String, param: String ) -> String {
-    
+    print("[swift] in prtn_invoke_function_through_dispatcher\n" )
+
     // print(functionCallbackWithDispatcherMap.capacity)
     // for (k, _) in functionCallbackWithDispatcherMap {
     //     print(k)
     // }
     
+    let entry = functionCallbackWithDispatcherMap[name]
+
+    if entry == nil {
+        print("[swift] in no callback for \(name)\n" )
+        return "no callback for \(name)"
+    }
+
     let dispatcherAndCallback = functionCallbackWithDispatcherMap[name]!
     let dispatcher = dispatcherAndCallback.dispatcher
     let callback = dispatcherAndCallback.callback

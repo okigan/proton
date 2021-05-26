@@ -31,18 +31,18 @@ function App() {
           // errorFunc( err )
         });
 
-        var sleepPromise = window.webkit.messageHandlers.sleep.postMessage("10000");
+        // var sleepPromise = window.webkit.messageHandlers.sleep.postMessage("10000");
 
-        sleepPromise.then(
-          function(result: any) {
-            console.log(result); // "Stuff worked!"
-            alert(result);
-            //successFunc( result )
-          },
-          function(err: any) {
-            console.log(err); // Error: "It broke"
-            // errorFunc( err )
-          });
+        // sleepPromise.then(
+        //   function(result: any) {
+        //     console.log(result); // "Stuff worked!"
+        //     alert(result);
+        //     //successFunc( result )
+        //   },
+        //   function(err: any) {
+        //     console.log(err); // Error: "It broke"
+        //     // errorFunc( err )
+        //   });
   
           
           

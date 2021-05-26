@@ -4,3 +4,7 @@ DerivedData/**
 protongo/protongo
 protonapp/main
 protonapp/protonapp
+.idea/.gitignore
+.idea/modules.xml
+.idea/proton2.iml
+.idea/vcs.xml
