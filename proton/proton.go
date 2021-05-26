@@ -95,9 +95,7 @@ type proton_swift_app_handle struct {
 }
 
 func New() ProtonApp {
-	handle := proton_swift_app_handle{
-		
-	}
+	handle := proton_swift_app_handle{}
 	handle.ContentPath = "unset content path"
 
 	return &handle

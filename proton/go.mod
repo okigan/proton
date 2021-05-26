@@ -1,4 +1,4 @@
-module proton
+module github.com/okigan/proton/proton
 
 go 1.16
 

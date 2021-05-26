@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	proton "github.com/okigan/proton/blob/master/proton/proton"
+	proton "github.com/okigan/proton/proton"
 )
 
 func callbacktest(param string) string {
