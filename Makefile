@@ -1,7 +1,3 @@
-THIS_DIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
-
-DYLD_FALLBACK_LIBRARY_PATH=${THIS_DIR}proton/.build/x86_64-apple-macosx/debug
-
 .PHONY: install
 install:
 	cd protonappui && yarn install
@@ -14,19 +10,23 @@ install:
 build-ui:
 	cd protonappui && yarn build
 
-.PHONY: build-swift
-build-swift:
-	cd proton-swift && swift build && swift test
+.PHONY: build-backend-cocoa
+build-backend-cocoa:
+	cd proton-backend-cocoa && swift build && swift test
 
 .PHONY: build-go
 build-go:
-	cd proton && go build ./... && DYLD_FALLBACK_LIBRARY_PATH=${DYLD_FALLBACK_LIBRARY_PATH} go test ./...
+	cd proton && go build ./... && go test ./...
 
 
 .PHONY: build
-build: build-ui build-swift build-go
+build: build-ui build-backend-cocoa build-go
 
 .PHONY: run
 run:
-	cd protongo && DYLD_FALLBACK_LIBRARY_PATH=${DYLD_FALLBACK_LIBRARY_PATH} go run . 
+	cd protonapp && go run . 
+
+.PHONY: self-test
+self-test:
+	cd protonapp && go run . --self-test
 
