@@ -215,7 +215,7 @@ let app = NSApplication.shared
 
 let delegate = AppDelegate()
 
-@available(macOS 10.15, *)
+@available(macOS 11, *)
 func main(_ title:String) -> Int {
     
     autoreleasepool {
