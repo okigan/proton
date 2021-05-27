@@ -18,7 +18,8 @@ function App() {
   const submitForm = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      var promise = window.webkit.messageHandlers.test2.postMessage("Hello from typescript!");
+      var promise = window.webkit.messageHandlers.mycallback1.postMessage("Hello from typescript1!");
+      promise = window.webkit.messageHandlers.mycallback1.postMessage("Hello from typescript2!");
 
       promise.then(
         function(result: any) {

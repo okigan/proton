@@ -14,8 +14,14 @@
 typedef char const * _Nonnull (* _Nonnull prtn_fun_ptr)(void const * _Nonnull, char const * _Nonnull param);
 
 void sayHello(char const * _Nullable namePtr);
-int startApp(char const * _Nullable namePtr);
-int setContentPath(char const * _Nullable contentPath);
+int startApp();
+
+void setTitle(char const * _Nullable contentPath);
+void setContentPath(char const * _Nullable contentPath);
+void addMenuExtra(char const * _Nonnull namePtr);
+
+int64_t bindCallback(char const * _Nonnull namePtr);
+
 
 
 int64_t prtn_register_function_callback_with_dispatcher(
@@ -23,5 +29,6 @@ int64_t prtn_register_function_callback_with_dispatcher(
     char const * _Nonnull (* _Nonnull dispatcher)(void const * _Nonnull, char const * _Nonnull param),
     void * _Nonnull callback
     );
+
 
 #endif /* __PROTON_CRAFTED_HEADER__ */

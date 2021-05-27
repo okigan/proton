@@ -1,14 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	proton "github.com/okigan/proton/proton"
 )
 
-func callbacktest(param string) string {
-	fmt.Sprintln("[golang] in %s: %s", "callbacktest", param)
+func mycallback1(param string) string {
+	println("go lang in", "mycallback1", param)
+	return "Done"
+}
+
+func mycallback2(param string) string {
+	println("go lang] in", "mycallback2", param)
 	return "Done"
 }
 
@@ -19,11 +23,13 @@ func main() {
 	}
 
 	p := proton.New()
+	p.SetTitle("Proton App")
 	p.SetContentPath("../protonappui/dist/index.html")
-	p.Bind("test2", callbacktest)
+	p.Bind("mycallback1", mycallback1)
+	p.Bind("mycallback2", mycallback2)
+	p.Bind("MenuExtraCallback", mycallback2)
+	p.AddMenuExtra("MenuItem1")
+	p.AddMenuExtra("MenuItem2")
 	defer p.Destroy()
-	// w.SetTitle("Minimal webview example")
-	// w.SetSize(800, 600, webview.HintNone)
-	// w.Navigate("https://en.m.wikipedia.org/wiki/Main_Page")
 	p.Run()
 }

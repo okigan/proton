@@ -21,12 +21,7 @@ public func sayHello(namePtr: UnsafePointer<CChar>?) -> Int {
 import Cocoa
 import SwiftUI
 import WebKit
-
-//import ModuleXObjC
 import Swift
-
-
-
 
 class AppMenu : NSMenu {
     override init(title: String) {
@@ -75,15 +70,7 @@ class AppMenu : NSMenu {
         windowMenu.submenu?.addItem(NSMenuItem(title: "Zoom", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: ""))
         windowMenu.submenu?.addItem(NSMenuItem.separator())
         windowMenu.submenu?.addItem(NSMenuItem(title: "Show All", action: #selector(NSApplication.arrangeInFront(_:)), keyEquivalent: "m"))
-        
-        //         let mainMenu = NSMenu(title: "Main Menu")
-        //         mainMenu.addItem(appMenu)
-        //         mainMenu.addItem(fileMenu)
-        //         mainMenu.addItem(editMenu)
-        //         mainMenu.addItem(windowMenu)
-        // //        return mainMenu
-        
-        
+                
         let menuItemOne = NSMenuItem()
         menuItemOne.submenu = NSMenu(title: "menuItemOne")
         menuItemOne.submenu?.items = [NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")]
@@ -92,52 +79,49 @@ class AppMenu : NSMenu {
     required init(coder: NSCoder) {
         super.init(coder: coder)
     }
-    
+}
+
+class AppConfig {
+    var contentPath: String = ""
+    var title: String = ""
+    var exposedNames: [String] = []
+    var menuExtras: [String] = []
 }
 
 @available(macOS 10.15, *)
-class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKScriptMessageHandlerWithReply {
-    var title: String = ProcessInfo.processInfo.processName
-    var contentPath: String = ""
+class AppDelegate: NSObject, 
+                   NSApplicationDelegate,
+                   WKScriptMessageHandlerWithReply
+{
+    var window: NSWindow!
+    var statusBarItem: NSStatusItem!
+    var webview: WKWebView!
+    var userContentController: WKUserContentController!
     
-    func userContentController(_ userContentController: WKUserContentController,
-                               didReceive message: WKScriptMessage){
-        print("[swift] WKScriptMessageHandler callback called, name: \(message.name) with body: \(message.body)")
-    }
-
     func userContentController(_ userContentController: WKUserContentController,
                                didReceive message: WKScriptMessage,
                                replyHandler: @escaping (Any?, String?) -> Void) {
         print("[swift] WKScriptMessageHandlerWithReply callback called, name: \(message.name) with body: \(message.body)")
         DispatchQueue.global(qos: .userInitiated).async {
-            print("[swift] This is run on a background queue")
-            let result2 = prtn_invoke_function_through_dispatcher(name: message.name, param: message.body as! String)
-
+            let result = prtn_invoke_function_through_dispatcher(name: message.name, param: message.body as! String)
+            
             DispatchQueue.main.async {
-                print("[swift] This is run on the main queue, after the previous code in outer block")
-                replyHandler("hello with reply \(result2)", nil)
-                }
+                replyHandler(result, nil)
+            }
         }
     }
-
-    var window: NSWindow!
-    var statusBarItem: NSStatusItem!
-    var webview: WKWebView!
     
-    @objc func Login() {
-        print("Login...done")
+    @objc func MenuExtraCallback(_ sender: NSMenuItem) {
+        print("[swift] MenuExtraCallback")
+        _ = prtn_invoke_function_through_dispatcher(name: "MenuExtraCallback", param: sender.title)
     }
     
-    @objc func Logout() {
-        print("Logout...done")
-    }
-
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         print("in applicationShouldTerminateAfterLastWindowClosed")
         NSApplication.shared.stop(self)
         return false
     }
-
+    
     func applicationWillTerminate(_ aNotification: Notification) {
         print("in applicationWillTerminate")
     }
@@ -149,26 +133,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKSc
             backing: .buffered,
             defer: false)
         window.cascadeTopLeft(from: NSPoint(x: 20, y: 20))
-        window.title = title
-        //        window.contentView = NSHostingView(rootView: ContentV)
+        window.title = appConfig.title
         window.makeKeyAndOrderFront(nil)
         
-        
-        let userContentController = WKUserContentController()
-        //        userContentController.add(self, name: "test")
-        userContentController.add(
-            self,
-            name: "test2")
-        
-        userContentController.add(
-            self,
-            name: "sleep")
-        
-        let scriptSource = "window.webkit.messageHandlers.test2.postMessage(\"Hello from swift applicationDidFinishLaunching!\");"
-        let script = WKUserScript(source: scriptSource, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
-        
-        userContentController.addUserScript(script)
-        
+        userContentController = WKUserContentController()
+
+        for name in appConfig.exposedNames {
+            userContentController.addScriptMessageHandler(
+                    self,
+                    contentWorld: .page,
+                    name: name)
+        }
+                
         let config = WKWebViewConfiguration()
         config.preferences.setValue(true, forKey:"developerExtrasEnabled")
         config.userContentController = userContentController
@@ -176,18 +152,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKSc
         webview = WKWebView(frame: .zero, configuration: config)
         
         do {
-//            let contents = try String(contentsOfFile: "/Users/iokulist/Github/okigan/proton/protonui/dist/index.html")
-            let contents = try String(contentsOfFile: contentPath)
-            // print(contents)
+            let contents = try String(contentsOfFile: appConfig.contentPath)
             webview.loadHTMLString(contents, baseURL: URL(string: ""))
-            //            url = URL(string: "data:text/html," + contents)
         } catch {
             let url = URL(string: "https://www.apple.com")
             let request = URLRequest(url: url!)
             webview.load(request)
         }
         window.contentView = webview
-        webview.evaluateJavaScript(    "cosole.log(\"hello from swift\")")
+        webview.evaluateJavaScript("cosole.log(\"hello from swift\")")
         
         let statusBar = NSStatusBar.system
         statusBarItem = statusBar.statusItem(withLength: NSStatusItem.squareLength)
@@ -195,32 +168,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKSc
         
         let statusBarMenu = NSMenu(title: "Cap Status Bar Menu")
         statusBarItem.menu = statusBarMenu
-        
-        statusBarMenu.addItem(
-            withTitle: "Login",
-            action: #selector(AppDelegate.Login),
-            keyEquivalent: "a")
-        
-        statusBarMenu.addItem(
-            withTitle: "Logout",
-            action: #selector(AppDelegate.Logout),
-            keyEquivalent: "b")
+                
+        for item in appConfig.menuExtras {
+            statusBarMenu.addItem(withTitle: item, action: #selector(AppDelegate.MenuExtraCallback), keyEquivalent: "")
+        }
         
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
 }
 
-    
-let app = NSApplication.shared
 
+let app = NSApplication.shared
+let appConfig = AppConfig()
 let delegate = AppDelegate()
 
 @available(macOS 11, *)
-func main(_ title:String) -> Int {
+func main() -> Int {
     
     autoreleasepool {
-        delegate.title = title
- //       delegate.contentPath = "/Users/iokulist/Github/okigan/proton/protonui/dist/index.html"
         let menu = AppMenu()
         app.mainMenu = menu
         app.delegate = delegate
@@ -232,15 +197,28 @@ func main(_ title:String) -> Int {
 }
 
 @_cdecl("startApp")
-public func startApp(namePtr: UnsafePointer<CChar>?) -> Int {
-    let name = String(cString: namePtr!)
-
-    return main(name)
+public func startApp() -> Int {
+    return main()
 }
 
 @_cdecl("setContentPath")
-public func setContentPath(contentPathPtr: UnsafePointer<CChar>?) -> Int {
-    delegate.contentPath = String(cString: contentPathPtr!)
+public func setContentPath(contentPathPtr: UnsafePointer<CChar>?) {
+    appConfig.contentPath = String(cString: contentPathPtr!)
+}
 
+@_cdecl("setTitle")
+public func setTitle(titlePtr: UnsafePointer<CChar>?) {
+    appConfig.title = String(cString: titlePtr!)
+}
+
+@_cdecl("addMenuExtra")
+public func addMenuExtra(namePtr: UnsafePointer<CChar>?) {
+    appConfig.menuExtras.append(String(cString: namePtr!))
+}
+
+@_cdecl("bindCallback")
+public func bindCallback(
+    namePtr: UnsafePointer<CChar>)  -> Int {
+    appConfig.exposedNames.append(String(cString: namePtr))
     return 0
 }

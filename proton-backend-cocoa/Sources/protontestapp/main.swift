@@ -11,4 +11,5 @@ print("Hello from protonapp main.swift ")
 
 let _ = sayHello(namePtr: "asd")
 
-let _ = startApp(namePtr: "asd")
+setTitle(titlePtr: "Test title")
+let _ = startApp()
